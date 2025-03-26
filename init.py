@@ -21,6 +21,7 @@ class Account:
         self.transactions = [] # has both withdrawal and deposits
         self.created_at = datetime.datetime.now()
 
+    
     # Create a DS for the deposits to ensure efficient insertion & retrieval
     # Use a Hash Map - for quick lookup of farmer's deposit history
     # Maintain and ordered list of deposits (use stack)
@@ -77,7 +78,6 @@ class Account:
             print(f"{transaction}\n")
         print("---END---")
 
-# Instances
 
 # +++++++++++++++++++++++
 # Interface for running app
@@ -86,7 +86,7 @@ class Account:
 running_state = True
 
 while(running_state):
-    # create SACCO Member
+    # create SACCO Member Account
     member_status = input("\nDo you have a SACCO Account? Yes/No\n")
 
     if(member_status == "Yes"):
@@ -127,9 +127,6 @@ while(running_state):
             print("\nCongs.. Account Created. \nUse FarmerId to access account")
             print("______________________\n")
 
-        
-
-       
     
     stop_check = input("Continue or Exit?\n")
     if(stop_check == "Exit"):
@@ -138,8 +135,6 @@ while(running_state):
 
 
 # INGORE CODE BELOW
-
-
 
 # SACCO Member class
 # class SACCO_Member:
