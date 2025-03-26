@@ -2,16 +2,15 @@ import datetime
 
 ac_numbers = {}
 
-def farmer_account_auth(id):
+def farmer_account_auth(farmer_id):
     try:
-        print("Account Exists")  
+        if isinstance(ac_numbers[farmer_id], Account):
+            print("Account Exists")
+        
         return ac_numbers[farmer_id]
     except:
-        print("No account with given id")
+        return "No account with given id - Create account."
     
-# sacco_members = []
-
-
 
 class Account:
     def __init__(self, id):
@@ -113,13 +112,23 @@ while(running_state):
                 print("Invalid Option.. Try again\n")
 
     else:
-       print("\n**Account Creation Process...")
-       farmer_id = input("Enter your given SACCO/FarmerID\n")
-       new_account = Account(farmer_id)
-       ac_numbers[farmer_id] = new_account
+        print("\n**Account Creation Process...")
+        farmer_id = input("Enter your given SACCO/FarmerID\n")
 
-       print("\nCongs.. Account Created. \nUse FarmerId to access account")
-       print("______________________\n")
+        # Check if the account already exists
+        auth_response = farmer_account_auth(farmer_id)
+
+        if isinstance(auth_response, Account):
+            print("You have an account already...")
+        else:
+            new_account = Account(farmer_id)
+            ac_numbers[farmer_id] = new_account
+
+            print("\nCongs.. Account Created. \nUse FarmerId to access account")
+            print("______________________\n")
+
+        
+
        
     
     stop_check = input("Continue or Exit?\n")
