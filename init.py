@@ -1,5 +1,6 @@
 import datetime
 
+# This dictiionary is a hash map store for all SACCO accounts
 ac_numbers = {}
 
 def farmer_account_auth(farmer_id):
@@ -17,8 +18,9 @@ class Account:
         self.id = id
         self.balance = 0
         self.authCheck = False
-        self.deposits = []
-        self.transactions = [] # has both withdrawal and deposits
+        self.deposits = LinkedList() # only deposits
+        self.withdraws = LinkedList() # only withdraws
+        self.transactions = LinkedList() # has both withdrawal and deposits
         self.created_at = datetime.datetime.now()
 
     
@@ -38,8 +40,13 @@ class Account:
         
             self.balance += int(amount)
 
-            self.deposits.insert(0, depositInfo)
-            self.transactions.insert(0, depositInfo)
+            # add deposit record
+            self.deposits.append(depositInfo)
+
+            # record this transaction
+            self.transactions.append(depositInfo)
+
+            print("Thanks for depositing..")
         else: 
             print("Deposit should be greater than zero")
         
@@ -63,20 +70,63 @@ class Account:
             }
 
             self.balance -= int(amount)
-            self.transactions.insert(0, withdrawInfo)
+            
+            # add withdraw record
+            self.withdraws.append(withdrawInfo)
 
+            # add transaction record
+            self.transactions.append(withdrawInfo)
+
+            print(f"Thanks, you've withdrawn.. UGX {amount}")
         else:
             print("Insufficient Account Balance")
 
     
     def get_account_balance(self):
-        print(f"Your Balance is = {self.balance}")
+        print(f"Your Balance is = UGX {self.balance}")
 
     def get_account_statement(self):
         print("---STATEMENT-START---")
-        for transaction in self.transactions:
-            print(f"{transaction}\n")
+        self.transactions.print_all_transactions()
         print("---END---")
+
+    def get_last_withdraw(self):
+        self.withdraws.print_last_transaction()
+
+    def get_last_deposit(self):
+        self.deposits.print_last_transaction()
+
+# Linked List class (For withdraws & deposits)
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def append(self, data):
+        new_node = Node(data)
+        new_node.next = self.head
+        self.head = new_node
+
+    def print_last_transaction(self):
+        current = self.head
+        if current is None:
+            print("No withdraws/deposits found.")
+        else:
+            print(current.data)
+            current = current.next
+
+    def print_all_transactions(self):
+        current = self.head
+        if current is None:
+            print("No withdraws/deposits found.")
+        while current:
+            print(current.data)
+            current = current.next
 
 
 # +++++++++++++++++++++++
@@ -97,8 +147,9 @@ while(running_state):
         farmer_account = farmer_account_auth(farmer_id)
 
         # Choose a Service
-        service_req = input("\nChoose Service\n 1. Deposit\n 2. Withdraw\n 3. Check Balance\n 4. Get Statement\n")
+        service_req = input("\nChoose A Service\n 1. Deposit\n 2. Withdraw\n 3. Check Balance\n 4. Get full Statement\n 5. Get last withdraw made\n 6. Get last deposit made\n\n")
         
+        # Context Switch based on what service choice
         match service_req:
             case '1':
                 farmer_account.deposit_money()
@@ -108,6 +159,10 @@ while(running_state):
                 farmer_account.get_account_balance()
             case '4':
                 farmer_account.get_account_statement()
+            case '5':
+                farmer_account.get_last_withdraw()
+            case '6':
+                farmer_account.get_last_deposit()
             case _:
                 print("Invalid Option.. Try again\n")
 
