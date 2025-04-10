@@ -1,132 +1,19 @@
-import datetime
+# import the account class module
+from account import Account
+from account_number_gen import SACCO_Member
 
 # This dictiionary is a hash map store for all SACCO accounts
 ac_numbers = {}
 
-def farmer_account_auth(farmer_id):
+def farmer_account_auth(farmer_account_id):
     try:
-        if isinstance(ac_numbers[farmer_id], Account):
+        if isinstance(ac_numbers[farmer_account_id], Account):
             print("Account Exists")
         
-        return ac_numbers[farmer_id]
+        return ac_numbers[farmer_account_id]
     except:
-        return "No account with given id - Create account."
-    
-
-class Account:
-    def __init__(self, id):
-        self.id = id
-        self.balance = 0
-        self.authCheck = False
-        self.deposits = LinkedList() # only deposits
-        self.withdraws = LinkedList() # only withdraws
-        self.transactions = LinkedList() # has both withdrawal and deposits
-        self.created_at = datetime.datetime.now()
-
-    
-    # Create a DS for the deposits to ensure efficient insertion & retrieval
-    # Use a Hash Map - for quick lookup of farmer's deposit history
-    # Maintain and ordered list of deposits (use stack)
-    def deposit_money(self):
-        amount = input("Enter Deposit Amount\n")
-
-        if int(amount) > 0:
-            depositInfo = {
-                "farmer_id": self.id,
-                "amount": amount,
-                "timeStamp": datetime.datetime.now(),
-                "transaction_type": "Deposit"
-            }
-        
-            self.balance += int(amount)
-
-            # add deposit record
-            self.deposits.append(depositInfo)
-
-            # record this transaction
-            self.transactions.append(depositInfo)
-
-            print("Thanks for depositing..")
-        else: 
-            print("Deposit should be greater than zero")
-        
-
-    # Check amount before withdraw
-    # Store & update farmer balances in constant time O(1)
-    # Retrieving the most recent transcations first (Use Stack)
-    # Store transaction with farmerID, Amount & Timestamp.
-    def withdraw_money(self):
-        # How much do you want to withdraw
-        amount = input("Enter Withdraw Amount\n")
-        # check if ammount is available
-        if int(amount) <= self.balance:
-            print("Withdrawing...")
-
-            withdrawInfo = {
-                "farmer_id": self.id,
-                "amount": amount,
-                "timeStamp": datetime.datetime.now(),
-                "transaction_type": "Withdraw"
-            }
-
-            self.balance -= int(amount)
-            
-            # add withdraw record
-            self.withdraws.append(withdrawInfo)
-
-            # add transaction record
-            self.transactions.append(withdrawInfo)
-
-            print(f"Thanks, you've withdrawn.. UGX {amount}")
-        else:
-            print("Insufficient Account Balance")
-
-    
-    def get_account_balance(self):
-        print(f"Your Balance is = UGX {self.balance}")
-
-    def get_account_statement(self):
-        print("---STATEMENT-START---")
-        self.transactions.print_all_transactions()
-        print("---END---")
-
-    def get_last_withdraw(self):
-        self.withdraws.print_last_transaction()
-
-    def get_last_deposit(self):
-        self.deposits.print_last_transaction()
-
-# Linked List class (For withdraws & deposits)
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-
-class LinkedList:
-    def __init__(self):
-        self.head = None
-
-    def append(self, data):
-        new_node = Node(data)
-        new_node.next = self.head
-        self.head = new_node
-
-    def print_last_transaction(self):
-        current = self.head
-        if current is None:
-            print("No withdraws/deposits found.")
-        else:
-            print(current.data)
-            current = current.next
-
-    def print_all_transactions(self):
-        current = self.head
-        if current is None:
-            print("No withdraws/deposits found.")
-        while current:
-            print(current.data)
-            current = current.next
+        print("No account with given id - Create account.")
+        return False
 
 
 # +++++++++++++++++++++++
@@ -134,22 +21,60 @@ class LinkedList:
 # +++++++++++++++++++++++
 
 running_state = True
+logged_in = False
+farmer_account = None
 
-while(running_state):
-    # create SACCO Member Account
-    member_status = input("\nDo you have a SACCO Account? Yes/No\n")
+while running_state:
+    if not logged_in:
+        # Ask if the user has an account
+        member_status = input("\nDo you have a SACCO Account Number? Yes/No\n")
 
-    if(member_status == "Yes"):
+        if member_status.lower() == "yes":
+            # Authenticate
+            sacco_account_number = input("\nEnter your SACCO Account Number ID\n")
+            farmer_account = farmer_account_auth(sacco_account_number)
 
-        # Authentication
-        farmer_id = input("\nEnter your FarmerID\n")
-        # check is the farmerID entered has an account setup
-        farmer_account = farmer_account_auth(farmer_id)
+            if farmer_account:
+                logged_in = True
+                print(f"\nWelcome back!")
+            else:
+                print("Invalid FarmerID. Please try again.")
+        else:
+            # Create account
+            print("\n**Account Creation Process...")
+            name = input("Enter your full name:\n")
+            age = input("Enter your age:\n")
+            occupation = input("Enter your occupation:\n")
+            address = input("Enter your residential address:\n")
+            contact = input("Enter your contact number:\n")
+            account_pin = input("Set a 4-digit account PIN:\n")
 
-        # Choose a Service
-        service_req = input("\nChoose A Service\n 1. Deposit\n 2. Withdraw\n 3. Check Balance\n 4. Get full Statement\n 5. Get last withdraw made\n 6. Get last deposit made\n\n")
-        
-        # Context Switch based on what service choice
+            new_sacco_member = SACCO_Member(name, age, occupation, address, contact, account_pin)
+            generated_account_number = new_sacco_member.account_number
+
+            new_account = Account(generated_account_number)
+            ac_numbers[generated_account_number] = new_account
+
+            print("\nCongrats! Account Created Successfully.")
+            print(f"SACCO Member: {name}\nAccount ID: {generated_account_number}")
+            print("______________________\n")
+            
+            farmer_account = new_account
+            logged_in = True
+
+    # If logged in, allow access to services
+    if logged_in and farmer_account:
+        service_req = input(
+            "\nChoose A Service:\n"
+            " 1. Deposit\n"
+            " 2. Withdraw\n"
+            " 3. Check Balance\n"
+            " 4. Get Full Statement\n"
+            " 5. Get Last Withdrawal\n"
+            " 6. Get Last Deposit\n"
+            " 7. Logout\n"
+        )
+
         match service_req:
             case '1':
                 farmer_account.deposit_money()
@@ -163,44 +88,15 @@ while(running_state):
                 farmer_account.get_last_withdraw()
             case '6':
                 farmer_account.get_last_deposit()
+            case '7':
+                logged_in = False
+                farmer_account = None
+                print("You have been logged out.")
             case _:
                 print("Invalid Option.. Try again\n")
 
-    else:
-        print("\n**Account Creation Process...")
-        farmer_id = input("Enter your given SACCO/FarmerID\n")
-
-        # Check if the account already exists
-        auth_response = farmer_account_auth(farmer_id)
-
-        if isinstance(auth_response, Account):
-            print("You have an account already...")
-        else:
-            new_account = Account(farmer_id)
-            ac_numbers[farmer_id] = new_account
-
-            print("\nCongs.. Account Created. \nUse FarmerId to access account")
-            print("______________________\n")
-
-    
-    stop_check = input("Continue or Exit?\n")
-    if(stop_check == "Exit"):
+    # Exit option
+    stop_check = input("Type 'Exit' to stop, or press Enter to continue:\n")
+    if stop_check.lower() == "exit":
         running_state = False
-    
-
-
-# INGORE CODE BELOW
-
-# SACCO Member class
-# class SACCO_Member:
-#     def __init__(self, name, farmer_id, age, occupation, address, contact, next_of_kin):
-#         self.name = name
-#         self.farmer_id = farmer_id
-#         self.age = age
-#         self.occupation = occupation
-#         self.address = address
-#         self.contact = contact
-#         self.next_of_kin = next_of_kin
-
-
 
